@@ -1,0 +1,1 @@
+// This file is deprecated. See HelpCenter.ts

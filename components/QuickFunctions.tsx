@@ -1,0 +1,1 @@
+// Deprecated. See QuickFunctions.vue
