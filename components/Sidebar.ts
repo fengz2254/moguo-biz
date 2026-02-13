@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { 
   LayoutGrid, 
   BookOpen, 
@@ -47,18 +47,74 @@ export default defineComponent({
             { id: 'small-class', label: '小班课管理' },
         ]
       },
-      { id: 'basic-info', label: '基本资料', icon: 'FileText', hasSubmenu: true },
-      { id: 'finance', label: '财务管理', icon: 'CreditCard', hasSubmenu: true },
-      { id: 'edu-affairs', label: '教务管理', icon: 'GraduationCap', hasSubmenu: true },
-      { id: 'marketing', label: '营销工具', icon: 'Megaphone', hasSubmenu: true },
-      { id: 'institution', label: '机构管理', icon: 'Building2', hasSubmenu: true },
-      { id: 'stats', label: '数据统计', icon: 'BarChart3', hasSubmenu: true },
+      { 
+        id: 'basic-info', 
+        label: '基本资料', 
+        icon: 'FileText', 
+        hasSubmenu: true,
+        children: [
+            { id: 'basic-info', label: '基本信息' },
+            { id: 'qualifications', label: '办学资质' }
+        ]
+      },
+      { 
+        id: 'finance-group', // Renamed from 'finance' to avoid conflict with child
+        label: '财务管理', 
+        icon: 'CreditCard', 
+        hasSubmenu: true,
+        isOpen: true,
+        children: [
+            { id: 'finance', label: '交易管理' },
+            { id: 'refunds', label: '退款管理' },
+            { id: 'settlement', label: '结算记录' }
+        ]
+      },
+      { 
+        id: 'edu-affairs', 
+        label: '教务管理', 
+        icon: 'GraduationCap', 
+        hasSubmenu: true,
+        children: [
+            { id: 'edu-affairs', label: '学员管理' },
+            { id: 'class-scheduling', label: '排课管理' }
+        ]
+      },
+      { 
+        id: 'marketing', 
+        label: '营销工具', 
+        icon: 'Megaphone', 
+        hasSubmenu: true,
+        children: [
+            { id: 'marketing', label: '营销中心' },
+            { id: 'coupons', label: '优惠券' }
+        ]
+      },
+      { 
+        id: 'institution', 
+        label: '机构管理', 
+        icon: 'Building2', 
+        hasSubmenu: true,
+        children: [
+            { id: 'institution', label: '机构信息' },
+            { id: 'staff', label: '员工管理' }
+        ]
+      },
+      { 
+        id: 'stats', 
+        label: '数据统计', 
+        icon: 'BarChart3', 
+        hasSubmenu: true,
+        children: [
+            { id: 'stats', label: '数据概览' },
+            { id: 'traffic-analysis', label: '流量分析' }
+        ]
+      },
       { 
         id: 'settings', 
         label: '设置', 
         icon: 'Settings', 
         hasSubmenu: true,
-        isOpen: true,
+        isOpen: false,
         children: [
             { id: 'profile', label: '个人资料' },
             { id: 'preferences', label: '偏好设置' },
@@ -67,9 +123,14 @@ export default defineComponent({
       },
     ]);
 
+    const isActive = (item) => {
+        if (props.currentView === item.id) return true;
+        if (item.children && item.children.some(child => child.id === props.currentView)) return true;
+        return false;
+    };
+
     const handleClick = (item) => {
         if (isCollapsed.value) {
-            // Auto expand if interacting with a collapsed menu item that has children
             if (item.children || item.hasSubmenu) {
                 isCollapsed.value = false;
                 item.isOpen = true;
@@ -79,7 +140,6 @@ export default defineComponent({
 
         if (item.children || item.hasSubmenu) {
              item.isOpen = !item.isOpen;
-             // If it has submenu but no children defined in this mockup, strictly don't navigate away in demo
              if(!item.children) return; 
         }
         emit('navigate', item.id);
@@ -93,7 +153,7 @@ export default defineComponent({
         isCollapsed.value = !isCollapsed.value;
     };
 
-    return { navItems, handleClick, handleChildClick, isCollapsed, toggleCollapse };
+    return { navItems, handleClick, handleChildClick, isCollapsed, toggleCollapse, isActive };
   },
   template: `
   <aside 
@@ -123,7 +183,7 @@ export default defineComponent({
             @click="handleClick(item)"
             class="group flex items-center rounded-xl cursor-pointer transition-all duration-200 relative"
             :class="[
-              currentView === item.id 
+              isActive(item)
                 ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium' 
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
               isCollapsed ? 'justify-center py-3' : 'justify-between px-3 py-2.5'
@@ -135,7 +195,7 @@ export default defineComponent({
                 :is="item.icon" 
                 class="w-5 h-5 transition-colors flex-shrink-0"
                 stroke-width="2"
-                :class="currentView === item.id ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'" 
+                :class="isActive(item) ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'" 
               />
               <span 
                 class="text-[14px] whitespace-nowrap transition-all duration-200"
@@ -152,7 +212,7 @@ export default defineComponent({
           </div>
 
           <!-- Submenu -->
-          <div v-if="item.children && item.isOpen && !isCollapsed" class="pl-11 pr-2 py-1 space-y-1">
+          <div v-if="item.children && item.isOpen && !isCollapsed" class="pl-11 pr-2 py-1 space-y-1 animate-fade-in">
              <div 
                 v-for="child in item.children" 
                 :key="child.id"

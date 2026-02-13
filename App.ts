@@ -37,7 +37,7 @@ export default defineComponent({
     Wallet
   },
   setup() {
-    const currentView = ref('course-management'); 
+    const currentView = ref('finance'); // Default to finance as per latest user request context
 
     const handleNavigate = (viewId) => {
         currentView.value = viewId;
@@ -45,22 +45,45 @@ export default defineComponent({
 
     const breadcrumbMap = {
       'dashboard': ['概览'],
+      
+      // Teaching
       'course-management': ['教学管理', '课程管理'],
       'homework': ['教学管理', '作业管理'],
       'small-class': ['教学管理', '小班课管理'],
-      'basic-info': ['基本资料'],
-      'finance': ['财务管理'],
-      'edu-affairs': ['教务管理'],
-      'marketing': ['营销工具'],
-      'institution': ['机构管理'],
-      'stats': ['数据统计'],
+      
+      // Basic Info
+      'basic-info': ['基本资料', '基本信息'],
+      'qualifications': ['基本资料', '办学资质'],
+
+      // Finance
+      'finance': ['财务管理', '交易管理'],
+      'refunds': ['财务管理', '退款管理'],
+      'settlement': ['财务管理', '结算记录'],
+
+      // Edu Affairs
+      'edu-affairs': ['教务管理', '学员管理'],
+      'class-scheduling': ['教务管理', '排课管理'],
+
+      // Marketing
+      'marketing': ['营销工具', '营销中心'],
+      'coupons': ['营销工具', '优惠券'],
+
+      // Institution
+      'institution': ['机构管理', '机构信息'],
+      'staff': ['机构管理', '员工管理'],
+
+      // Stats
+      'stats': ['数据统计', '数据概览'],
+      'traffic-analysis': ['数据统计', '流量分析'],
+
+      // Settings
       'settings': ['设置'],
       'profile': ['设置', '个人资料'],
       'preferences': ['设置', '偏好设置'],
       'advanced-settings': ['设置', '高级设置'],
     };
 
-    const currentBreadcrumbs = computed(() => breadcrumbMap[currentView.value] || []);
+    const currentBreadcrumbs = computed(() => breadcrumbMap[currentView.value] || ['未知页面']);
 
     // --- Theme Management ---
     const theme = ref(localStorage.getItem('theme') || 'system');
@@ -252,21 +275,14 @@ export default defineComponent({
                 @update:theme="updateTheme"
             />
         </div>
-        <div v-else-if="['basic-info', 'edu-affairs', 'small-class'].includes(currentView)" class="flex flex-col items-center justify-center h-full text-slate-400">
-             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-card mb-4">
-                <Sparkles class="w-10 h-10 text-primary-300" />
-            </div>
-            <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200">功能开发中</h2>
-            <p class="text-sm mt-1">视图 "{{ currentView }}" 正在建设中。</p>
-        </div>
         
-        <!-- Fallback -->
+        <!-- Fallback for in-development pages -->
         <div v-else class="flex flex-col items-center justify-center h-full text-slate-400">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-card mb-4">
                 <Sparkles class="w-10 h-10 text-primary-300" />
             </div>
             <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200">功能开发中</h2>
-            <p class="text-sm mt-1">视图 "{{ currentView }}" 正在建设中。</p>
+            <p class="text-sm mt-1">页面 "{{ currentBreadcrumbs.join(' / ') }}" 正在建设中。</p>
         </div>
 
       </main>

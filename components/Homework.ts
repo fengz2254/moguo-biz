@@ -1,63 +1,65 @@
 import { defineComponent, ref } from 'vue';
 import { 
-  Search, Plus, HelpCircle, FileText, Filter, RefreshCw, 
-  Edit, Trash2, BookOpen, Layers, MoreHorizontal, Calendar,
-  Clock, CheckCircle2, AlertCircle, ChevronDown
+  Search, HelpCircle, FileText, Filter, RefreshCw, 
+  BookOpen, Layers, MoreHorizontal, Eye, Plus, Info
 } from 'lucide-vue-next';
 
 export default defineComponent({
   name: 'Homework',
   components: { 
-    Search, Plus, HelpCircle, FileText, Filter, RefreshCw, 
-    Edit, Trash2, BookOpen, Layers, MoreHorizontal, Calendar,
-    Clock, CheckCircle2, AlertCircle, ChevronDown
+    Search, HelpCircle, FileText, Filter, RefreshCw, 
+    BookOpen, Layers, MoreHorizontal, Eye, Plus, Info
   },
   setup() {
     const activeTab = ref('course-homework');
     
-    // Exact data match from the screenshot
-    const homeworks = ref([
-      { id: 1, type: '自定义', name: '作业 03-26 星期三', updatedAt: '2025-03-26 17:32:30', creator: '赵老师', status: 'published' },
-      { id: 2, type: '自定义', name: '作业 03-26 星期三', updatedAt: '2025-03-26 11:22:02', creator: '赵老师', status: 'draft' },
-      { id: 3, type: '自定义', name: '作业 03-21 星期五', updatedAt: '2025-03-21 10:59:02', creator: '赵老师', status: 'published' },
-      { id: 4, type: '试卷', name: '作业 02-26 星期三', updatedAt: '2025-03-17 15:29:38', creator: '赵老师', status: 'published' },
-      { id: 5, type: '试卷', name: '英语作业', updatedAt: '2025-03-17 15:29:42', creator: '赵老师', status: 'archived' },
+    // Data matched exactly from the provided screenshot
+    const courseList = ref([
+      { 
+        id: '750162247340101', 
+        name: '韵儿老师的绘画课', 
+        homeworkCount: 1, 
+        studentCount: 0, 
+        pendingCount: 0 
+      },
+      { 
+        id: '656956308897861', 
+        name: '质心学院', 
+        homeworkCount: 2, 
+        studentCount: 13, 
+        pendingCount: 0 
+      },
+      { 
+        id: '643555329273925', 
+        name: '春季物理', 
+        homeworkCount: 1, 
+        studentCount: 0, 
+        pendingCount: 0 
+      }
     ]);
 
-    return { activeTab, homeworks };
+    return { activeTab, courseList };
   },
   template: `
   <div class="flex flex-col h-full bg-[#F8FAFC] min-h-screen font-sans p-6 space-y-4 animate-fade-in">
     
-    <!-- Compact Page Header -->
-    <div class="flex justify-between items-center py-1">
-        <div class="flex items-center gap-3">
-             <div class="p-2 bg-white border border-slate-200 rounded-lg shadow-sm text-primary-600">
-                <FileText class="w-5 h-5" />
-             </div>
-             <div>
-                <h2 class="text-lg font-bold text-slate-800 tracking-tight leading-none">作业管理</h2>
-                <p class="text-[11px] text-slate-400 font-medium mt-1">管理课程作业与题库资源</p>
-             </div>
+    <!-- Info Banner (Replaces redundant header) -->
+    <div class="flex justify-between items-start md:items-center px-1">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+             <div class="w-1 h-4 bg-primary-500 rounded-full mr-1"></div>
+             <p>可创建作业、管理已有作业记录(模板)，适用于课程作业、随堂测验等场景。</p>
         </div>
-        <div class="flex items-center gap-3">
-             <button class="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors px-2 py-1.5 rounded hover:bg-slate-100">
-                <HelpCircle class="w-4 h-4" />
-                <span class="hidden sm:inline">使用帮助</span>
-            </button>
-            <button class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-lg shadow-primary-500/20 flex items-center gap-2 transition-all hover:-translate-y-0.5">
-                <Plus class="w-4 h-4" />
-                创建作业
-            </button>
-        </div>
+        <button class="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-primary-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-white hover:shadow-sm">
+            <HelpCircle class="w-4 h-4" />
+            <span>使用帮助</span>
+        </button>
     </div>
 
     <!-- Main Content Card -->
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col flex-1 overflow-hidden relative">
         
-        <!-- Modern Tabs Header -->
+        <!-- Tabs Header -->
         <div class="border-b border-slate-200 flex flex-col md:flex-row items-center justify-between px-2 bg-slate-50/50">
-            <!-- Tabs -->
              <div class="flex self-stretch">
                 <button 
                     @click="activeTab = 'course-homework'"
@@ -66,7 +68,6 @@ export default defineComponent({
                 >
                     <BookOpen class="w-4 h-4 transition-transform group-hover:scale-110" :class="activeTab === 'course-homework' ? 'text-primary-500' : 'text-slate-400'" />
                     课程作业
-                    <span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full" :class="activeTab === 'course-homework' ? 'bg-primary-50 text-primary-600' : ''">12</span>
                 </button>
                  <button 
                     @click="activeTab = 'homework-library'"
@@ -79,36 +80,46 @@ export default defineComponent({
             </div>
         </div>
 
-        <!-- Toolbar -->
-        <div class="p-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100">
-             
-             <!-- Left: Search & Filter -->
-             <div class="flex items-center gap-3 flex-1">
-                 <div class="relative group w-full max-w-xs">
-                    <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-primary-500 transition-colors" />
-                    <input 
-                        type="text" 
-                        placeholder="搜索作业名称或ID..." 
-                        class="pl-9 pr-3 py-2 text-sm border border-slate-200 bg-slate-50 rounded-lg w-full focus:outline-none focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-500/20 transition-all" 
-                    />
-                 </div>
+        <!-- Toolbar (Matching Screenshot Fields) -->
+        <div class="p-5 border-b border-slate-100 bg-white">
+             <div class="flex flex-wrap items-center gap-4">
                  
-                 <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
-
-                 <div class="relative">
-                    <button class="px-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
-                        <Filter class="w-3.5 h-3.5" />
-                        状态: 全部
-                        <ChevronDown class="w-3 h-3 text-slate-400" />
-                    </button>
+                 <!-- Course Name Input -->
+                 <div class="flex items-center gap-2">
+                    <label class="text-sm font-bold text-slate-700">课程名:</label>
+                    <div class="relative group w-64">
+                        <input 
+                            type="text" 
+                            placeholder="请输入" 
+                            class="px-3 py-2 text-sm border border-slate-200 bg-slate-50 rounded-lg w-full focus:outline-none focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-500/20 transition-all" 
+                        />
+                    </div>
                  </div>
-             </div>
 
-             <!-- Right: View Toggle -->
-             <div class="flex items-center gap-2">
-                 <button class="p-2 text-slate-400 hover:text-primary-600 hover:bg-slate-50 rounded-lg transition-colors" title="刷新列表">
-                    <RefreshCw class="w-4 h-4" />
-                 </button>
+                 <!-- Status Select -->
+                 <div class="flex items-center gap-2">
+                    <label class="text-sm font-bold text-slate-700">批改情况:</label>
+                    <div class="relative">
+                        <select class="appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all cursor-pointer min-w-[120px]">
+                            <option value="all">全部</option>
+                            <option value="pending">待批改</option>
+                            <option value="completed">已批改</option>
+                        </select>
+                        <!-- Custom Arrow -->
+                        <svg class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                 </div>
+
+                 <!-- Buttons -->
+                 <div class="flex items-center gap-3 ml-2">
+                     <button class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all hover:shadow-md flex items-center gap-2 transform active:scale-95">
+                        <Search class="w-4 h-4" />
+                        搜索
+                     </button>
+                     <button class="px-5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium rounded-lg transition-all transform active:scale-95">
+                        重置
+                     </button>
+                 </div>
              </div>
         </div>
 
@@ -117,86 +128,41 @@ export default defineComponent({
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead class="bg-slate-50/80 sticky top-0 z-10 backdrop-blur-sm">
                     <tr>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200 w-20">序号</th>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200">作业名称</th>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200 w-32">状态</th>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200 w-48">更新时间</th>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200 w-32">创建人</th>
-                        <th class="py-3 px-6 text-xs font-semibold text-slate-500 border-b border-slate-200 w-32 text-right">操作</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200 w-20">序号</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200">课程名</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200 text-center w-32">作业份数</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200 text-center w-32">学员数</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200 text-center w-40">
+                            <div class="inline-flex items-center gap-1">
+                                待批改总数
+                                <Info class="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                            </div>
+                        </th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 border-b border-slate-200 w-24 text-center">操作</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    <tr v-for="(item, index) in homeworks" :key="item.id" class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="py-4 px-6 text-sm text-slate-500 align-middle font-mono">{{ index + 1 }}</td>
-                        <td class="py-4 px-6 align-middle">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                                    <FileText class="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-800 font-bold hover:text-primary-600 cursor-pointer transition-colors">{{ item.name }}</p>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <span 
-                                            class="text-[10px] px-1 rounded font-medium border"
-                                            :class="item.type === '自定义' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'"
-                                        >
-                                            {{ item.type }}
-                                        </span>
-                                    </div>
-                                </div>
+                    <tr v-for="(item, index) in courseList" :key="item.id" class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="py-5 px-6 text-sm text-slate-500 align-middle font-mono">{{ index + 1 }}</td>
+                        <td class="py-5 px-6 align-middle">
+                            <div class="flex flex-col gap-0.5">
+                                <p class="text-sm text-slate-800 font-bold group-hover:text-primary-600 transition-colors">{{ item.name }}</p>
+                                <p class="text-[11px] text-slate-400 font-mono tracking-tight">课程ID: {{ item.id }}</p>
                             </div>
                         </td>
-                        <td class="py-4 px-6 align-middle">
-                             <span v-if="item.status === 'published'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 已发布
-                             </span>
-                             <span v-else-if="item.status === 'draft'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 草稿
-                             </span>
-                             <span v-else class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 已归档
-                             </span>
-                        </td>
-                        <td class="py-4 px-6 text-xs text-slate-500 tabular-nums align-middle">
-                            <div class="flex items-center gap-1.5">
-                                <Clock class="w-3.5 h-3.5 text-slate-400" />
-                                {{ item.updatedAt }}
-                            </div>
-                        </td>
-                        <td class="py-4 px-6 text-sm text-slate-600 align-middle">
-                            <div class="flex items-center gap-2">
-                                <div class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] font-bold flex items-center justify-center">
-                                    {{ item.creator.charAt(0) }}
-                                </div>
-                                {{ item.creator }}
-                            </div>
-                        </td>
-                        <td class="py-4 px-6 text-right align-middle">
-                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button class="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors" title="编辑">
-                                    <Edit class="w-4 h-4" />
-                                </button>
-                                <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="删除">
-                                    <Trash2 class="w-4 h-4" />
-                                </button>
-                                <button class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors">
-                                    <MoreHorizontal class="w-4 h-4" />
-                                </button>
-                            </div>
+                        <td class="py-5 px-6 text-sm text-slate-700 font-medium align-middle text-center tabular-nums">{{ item.homeworkCount }}</td>
+                        <td class="py-5 px-6 text-sm text-slate-700 font-medium align-middle text-center tabular-nums">{{ item.studentCount }}</td>
+                        <td class="py-5 px-6 text-sm text-slate-700 font-medium align-middle text-center tabular-nums">{{ item.pendingCount }}</td>
+                        <td class="py-5 px-6 align-middle text-center">
+                            <button class="text-sm font-bold text-primary-600 hover:text-primary-700 hover:underline transition-colors">
+                                查看
+                            </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         
-        <!-- Footer Pagination -->
-        <div class="px-6 py-4 border-t border-slate-200 bg-white flex justify-between items-center">
-            <span class="text-xs text-slate-500">显示 1 - 5 共 5 条</span>
-            <div class="flex gap-2">
-                <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 bg-white rounded-md text-slate-400 cursor-not-allowed">上一页</button>
-                <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 bg-white rounded-md text-slate-400 cursor-not-allowed">下一页</button>
-            </div>
-        </div>
     </div>
   </div>
   `

@@ -18,18 +18,25 @@ export default defineComponent({
     return { formatDate };
   },
   template: `
-  <header class="h-[70px] bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm flex items-center justify-between px-8 z-10 sticky top-0">
+  <header class="h-[64px] bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-8 z-10 sticky top-0 transition-all duration-200">
     
-    <!-- Title / Breadcrumb (Left) -->
-    <div class="flex flex-col justify-center">
-       <div v-if="breadcrumbs.length > 1" class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-0.5">
-          <template v-for="(item, index) in breadcrumbs.slice(0, -1)" :key="index">
-            <span>{{ item }}</span>
-            <span>/</span>
-          </template>
-       </div>
-       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight">{{ breadcrumbs[breadcrumbs.length - 1] }}</h2>
-       <p class="text-[10px] text-slate-400 font-medium mt-0.5" v-if="breadcrumbs.length === 1 && breadcrumbs[0] === '概览'">{{ formatDate() }}</p>
+    <!-- Title / Breadcrumb (Left) - Redesigned as Single Line -->
+    <div class="flex items-center gap-3 select-none">
+       <template v-for="(item, index) in breadcrumbs" :key="index">
+          <!-- Separator -->
+          <span v-if="index > 0" class="text-slate-300 dark:text-slate-600 text-lg font-light">/</span>
+          
+          <!-- Breadcrumb Item -->
+          <span 
+            :class="[
+              index === breadcrumbs.length - 1 
+                ? 'text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight' 
+                : 'text-base font-medium text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-default'
+            ]"
+          >
+            {{ item }}
+          </span>
+       </template>
     </div>
 
     <!-- Right Actions -->
@@ -47,7 +54,7 @@ export default defineComponent({
             <span>开始上课</span>
         </button>
 
-        <div class="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
+        <div class="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2 hidden sm:block"></div>
 
         <!-- Notification -->
         <button class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-soft hover:text-primary-600 dark:hover:text-primary-400 hover:shadow-md transition-all relative">
