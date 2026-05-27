@@ -12,11 +12,14 @@ export default defineConfig(({ mode }) => {
       plugins: [],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        __VUE_OPTIONS_API__: true,
+        __VUE_PROD_DEVTOOLS__: false,
       },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          'vue': 'vue/dist/vue.esm-bundler.js'
         }
       }
     };

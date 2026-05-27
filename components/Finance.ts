@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { 
   Search, HelpCircle, RefreshCw, ChevronLeft, ChevronRight, 
   FileText, ChevronDown, Filter, Settings, Download, 
@@ -17,8 +17,8 @@ export default defineComponent({
     Video, TableIcon, Calendar, TrendingUp, RotateCcw
   },
   setup() {
-    // Exact data from the screenshot provided in previous context
-    const transactionList = ref([
+    // 1. Base Data (from screenshot)
+    const baseData = [
       { 
         id: 'G603058184298430470',
         productName: '讨论互联网产品设计',
@@ -71,7 +71,87 @@ export default defineComponent({
         buyerName: '老赵',
         buyerPhone: '152****2254'
       }
-    ]);
+    ];
+
+    // 2. Generate Mock Data (16 additional items to make 20 items / 2 pages)
+    const generatedData = Array.from({ length: 36 }).map((_, i) => {
+        const idSuffix = 1000 + i;
+        const isPaid = i % 5 !== 0; // Every 5th item is pending
+        return {
+            id: `G55723060778500${idSuffix}`,
+            productName: i % 2 === 0 ? '交互设计高级班' : '前端开发入门实战',
+            productId: `6534265815${idSuffix}`,
+            validity: '随到随学（365）天',
+            status: isPaid ? '支付成功' : '待支付',
+            amount: isPaid ? (i % 2 === 0 ? '¥299.00' : '¥99.00') : '¥0.00',
+            method: i % 3 === 0 ? '微信' : '支付宝',
+            payTime: isPaid ? `2025-03-10 10:${10 + i}:00` : '-',
+            orderTime: `2025-03-10 10:${10 + i}:00`,
+            buyerName: `学员_${idSuffix}`,
+            buyerPhone: `138****${idSuffix}`
+        };
+    });
+
+    const transactionList = ref([...baseData, ...generatedData]);
+
+    // 3. Pagination Logic
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+
+    const totalItems = computed(() => transactionList.value.length);
+    const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
+    
+    const paginatedList = computed(() => {
+        const start = (currentPage.value - 1) * pageSize.value;
+        const end = start + pageSize.value;
+        return transactionList.value.slice(start, end);
+    });
+
+    const paginatedInfo = computed(() => {
+        if (totalItems.value === 0) return { start: 0, end: 0, total: 0 };
+        const start = (currentPage.value - 1) * pageSize.value + 1;
+        const end = Math.min(currentPage.value * pageSize.value, totalItems.value);
+        return { start, end, total: totalItems.value };
+    });
+
+    // Calculate visible page numbers with ellipsis
+    const visiblePages = computed(() => {
+        const total = totalPages.value;
+        const current = currentPage.value;
+        const delta = 1; // Number of pages to show around current
+        const range = [];
+        const rangeWithDots = [];
+        let l;
+
+        range.push(1);
+        for (let i = current - delta; i <= current + delta; i++) {
+            if (i < total && i > 1) {
+                range.push(i);
+            }
+        }
+        if (total > 1) range.push(total);
+
+        for (let i of range) {
+            if (l) {
+                if (i - l === 2) {
+                    rangeWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            l = i;
+        }
+        return rangeWithDots;
+    });
+
+    const nextPage = () => {
+        if (currentPage.value < totalPages.value) currentPage.value++;
+    };
+
+    const prevPage = () => {
+        if (currentPage.value > 1) currentPage.value--;
+    };
 
     // Mock data for the detailed learning records (from screenshot)
     const learningRecords = ref([
@@ -113,14 +193,23 @@ export default defineComponent({
         openDrawer, 
         closeDrawer, 
         getStatusStyle,
-        learningRecords
+        learningRecords,
+        // Pagination
+        currentPage,
+        pageSize,
+        totalPages,
+        paginatedList,
+        paginatedInfo,
+        visiblePages,
+        nextPage,
+        prevPage
     };
   },
   template: `
-  <div class="flex flex-col h-full bg-[#F3F5F7] min-h-screen font-sans p-4 space-y-3 relative">
+  <div class="flex flex-col h-full bg-[#F3F5F7] font-sans p-4 space-y-3 relative overflow-hidden">
     
     <!-- 1. Top Section: Metrics (Visual Anchors Added) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 shrink-0">
         <!-- Card 1: Order Metrics (Blue Anchor) -->
         <div class="bg-white border border-slate-200 border-l-4 border-l-[#1677FF] rounded-r rounded-l-[1px] p-4 shadow-sm flex items-center justify-around hover:shadow-md transition-shadow group">
             <div class="flex flex-col items-center gap-1">
@@ -149,13 +238,13 @@ export default defineComponent({
     </div>
 
     <!-- 2. Main Content Container -->
-    <div class="flex flex-col flex-1 gap-0">
+    <div class="flex flex-col flex-1 gap-0 min-h-0">
         
         <!-- Table Card -->
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col flex-1 overflow-hidden relative">
             
             <!-- Toolbar (Refined Layout) -->
-            <div class="px-4 py-3 border-b border-slate-200 flex flex-col xl:flex-row items-center justify-between gap-3 bg-white">
+            <div class="px-4 py-3 border-b border-slate-200 flex flex-col xl:flex-row items-center justify-between gap-3 bg-white shrink-0">
                  <!-- Filters Left -->
                  <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                     <!-- ID Input -->
@@ -222,7 +311,7 @@ export default defineComponent({
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         <tr 
-                            v-for="item in transactionList" 
+                            v-for="item in paginatedList" 
                             :key="item.id" 
                             class="hover:bg-primary-50/40 transition-colors group cursor-pointer"
                             @click="openDrawer(item)"
@@ -273,12 +362,62 @@ export default defineComponent({
                 </table>
             </div>
 
-            <!-- Footer Pagination -->
-            <div class="px-5 py-3 border-t border-slate-200 bg-white text-xs text-slate-500 flex justify-between items-center">
-                <span>显示 1 - {{ transactionList.length }} 共 {{ transactionList.length }} 条</span>
-                <div class="flex gap-1">
-                    <button class="px-2.5 py-1 border border-slate-200 bg-white rounded hover:bg-slate-50 disabled:opacity-50 transition-colors" disabled>上一页</button>
-                    <button class="px-2.5 py-1 border border-slate-200 bg-white rounded hover:bg-slate-50 disabled:opacity-50 transition-colors" disabled>下一页</button>
+            <!-- Footer Pagination (New Design) -->
+            <div class="px-5 py-4 border-t border-slate-200 bg-white flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+                <!-- Left Side: Info & Page Size -->
+                <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span>显示 {{ paginatedInfo.start }} 至 {{ paginatedInfo.end }} 共 {{ paginatedInfo.total }} 条结果</span>
+                    <div class="flex items-center gap-2">
+                        <span>每页:</span>
+                        <div class="relative">
+                            <select 
+                                v-model="pageSize" 
+                                @change="currentPage = 1"
+                                class="appearance-none bg-white border border-slate-200 rounded px-3 py-1 pr-8 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 cursor-pointer text-slate-700 font-medium transition-all hover:border-slate-300"
+                            >
+                                <option :value="10">10</option>
+                                <option :value="20">20</option>
+                                <option :value="50">50</option>
+                            </select>
+                            <ChevronDown class="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Pagination Controls -->
+                <div class="flex items-center gap-1.5">
+                    <!-- Prev -->
+                    <button 
+                        @click="prevPage" 
+                        :disabled="currentPage === 1"
+                        class="w-8 h-8 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:border-primary-500 hover:text-primary-600 disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-500 transition-all shadow-sm"
+                    >
+                        <ChevronLeft class="w-4 h-4" />
+                    </button>
+                    
+                    <!-- Pages -->
+                    <template v-for="(page, index) in visiblePages" :key="index">
+                        <span v-if="page === '...'" class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs">...</span>
+                        <button 
+                            v-else
+                            @click="currentPage = page"
+                            class="w-8 h-8 flex items-center justify-center rounded border text-xs font-bold transition-all shadow-sm"
+                            :class="currentPage === page 
+                                ? 'border-primary-600 text-primary-600 bg-primary-50' 
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-primary-500 hover:text-primary-600'"
+                        >
+                            {{ page }}
+                        </button>
+                    </template>
+
+                    <!-- Next -->
+                    <button 
+                        @click="nextPage" 
+                        :disabled="currentPage === totalPages"
+                        class="w-8 h-8 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:border-primary-500 hover:text-primary-600 disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-500 transition-all shadow-sm"
+                    >
+                        <ChevronRight class="w-4 h-4" />
+                    </button>
                 </div>
             </div>
         </div>

@@ -1,15 +1,19 @@
 import { defineComponent, ref, computed, watch, onMounted } from 'vue';
-import Sidebar from './components/Sidebar.ts';
-import Header from './components/Header.ts';
-import QuickFunctions from './components/QuickFunctions.ts';
-import HelpCenter from './components/HelpCenter.ts';
-import RightPanel from './components/RightPanel.ts';
-import CourseManagement from './components/CourseManagement.ts'; 
-import Homework from './components/Homework.ts';
-import Finance from './components/Finance.ts';
-import Marketing from './components/Marketing.ts';
-import Settings from './components/Settings.ts';
-import Stats from './components/Stats.ts';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import QuickFunctions from './components/QuickFunctions';
+import HelpCenter from './components/HelpCenter';
+import RightPanel from './components/RightPanel';
+import CourseManagement from './components/CourseManagement'; 
+import Homework from './components/Homework';
+import Finance from './components/Finance';
+import Refunds from './components/Refunds';
+import Settlement from './components/Settlement';
+import StudentManagement from './components/StudentManagement';
+import Marketing from './components/Marketing';
+import Settings from './components/Settings';
+import Stats from './components/Stats';
+import LearningData from './components/LearningData';
 import { Megaphone, X, Trophy, Sparkles, AlertCircle, Info, BookOpen, Users, Wallet } from 'lucide-vue-next';
 
 export default defineComponent({
@@ -23,9 +27,13 @@ export default defineComponent({
     CourseManagement,
     Homework,
     Finance,
+    Refunds,
+    Settlement,
+    StudentManagement,
     Marketing,
     Settings,
     Stats,
+    LearningData,
     Megaphone,
     X,
     Trophy,
@@ -37,7 +45,7 @@ export default defineComponent({
     Wallet
   },
   setup() {
-    const currentView = ref('finance'); // Default to finance as per latest user request context
+    const currentView = ref('learning-data'); // Default to learning-data as per latest user request context
 
     const handleNavigate = (viewId) => {
         currentView.value = viewId;
@@ -49,7 +57,6 @@ export default defineComponent({
       // Teaching
       'course-management': ['教学管理', '课程管理'],
       'homework': ['教学管理', '作业管理'],
-      'small-class': ['教学管理', '小班课管理'],
       
       // Basic Info
       'basic-info': ['基本资料', '基本信息'],
@@ -58,11 +65,11 @@ export default defineComponent({
       // Finance
       'finance': ['财务管理', '交易管理'],
       'refunds': ['财务管理', '退款管理'],
-      'settlement': ['财务管理', '结算记录'],
 
       // Edu Affairs
       'edu-affairs': ['教务管理', '学员管理'],
       'class-scheduling': ['教务管理', '排课管理'],
+      'small-class': ['教务管理', '小班课管理'],
 
       // Marketing
       'marketing': ['营销工具', '营销中心'],
@@ -70,11 +77,14 @@ export default defineComponent({
 
       // Institution
       'institution': ['机构管理', '机构信息'],
-      'staff': ['机构管理', '员工管理'],
+      'staff': ['机构管理', '人员管理'],
+      'settlement': ['机构管理', '结算管理'],
+      'keys': ['机构管理', '密钥12'],
 
       // Stats
       'stats': ['数据统计', '数据概览'],
       'traffic-analysis': ['数据统计', '流量分析'],
+      'learning-data': ['数据统计', '学习数据'],
 
       // Settings
       'settings': ['设置'],
@@ -87,11 +97,14 @@ export default defineComponent({
 
     // --- Theme Management ---
     const theme = ref(localStorage.getItem('theme') || 'system');
+    const isDarkState = ref(false);
 
     const applyTheme = () => {
        const root = document.documentElement;
        const isDark = theme.value === 'dark' || (theme.value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
        
+       isDarkState.value = isDark;
+
        if (isDark) {
            root.classList.add('dark');
        } else {
@@ -114,12 +127,30 @@ export default defineComponent({
         theme.value = newTheme;
     };
 
-    return { currentView, handleNavigate, currentBreadcrumbs, theme, updateTheme };
+    const toggleTheme = () => {
+        updateTheme(isDarkState.value ? 'light' : 'dark');
+    };
+
+    return { 
+        currentView, 
+        handleNavigate, 
+        currentBreadcrumbs, 
+        theme, 
+        updateTheme,
+        toggleTheme,
+        isDark: isDarkState
+    };
   },
   template: `
   <div class="flex h-screen bg-[#F8FAFC] dark:bg-slate-900 dark:text-slate-100 font-sans text-slate-600 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
     <!-- Sidebar -->
-    <Sidebar :currentView="currentView" @navigate="handleNavigate" class="flex-shrink-0" />
+    <Sidebar 
+        :currentView="currentView" 
+        :isDark="isDark"
+        @navigate="handleNavigate" 
+        @toggle-theme="toggleTheme"
+        class="flex-shrink-0" 
+    />
 
     <div class="flex flex-col flex-1 min-w-0">
       <!-- Header -->
@@ -262,11 +293,23 @@ export default defineComponent({
         <div v-else-if="currentView === 'finance'" class="h-full">
             <Finance />
         </div>
+        <div v-else-if="currentView === 'refunds'" class="h-full">
+            <Refunds />
+        </div>
+        <div v-else-if="currentView === 'settlement'" class="h-full">
+            <Settlement />
+        </div>
+        <div v-else-if="currentView === 'edu-affairs'" class="h-full">
+            <StudentManagement />
+        </div>
         <div v-else-if="currentView === 'marketing'" class="h-full">
             <Marketing />
         </div>
         <div v-else-if="currentView === 'stats'" class="h-full">
             <Stats />
+        </div>
+        <div v-else-if="currentView === 'learning-data'" class="h-full">
+            <LearningData />
         </div>
         <div v-else-if="['settings', 'profile', 'institution', 'preferences', 'advanced-settings'].includes(currentView)" class="h-full">
             <Settings 

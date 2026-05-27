@@ -13,8 +13,10 @@ import {
   Zap, 
   GraduationCap, 
   Store, 
-  PanelLeftClose, 
-  PanelLeftOpen 
+  ChevronsLeft,
+  ChevronsRight,
+  Moon,
+  Sun
 } from 'lucide-vue-next';
 
 export default defineComponent({
@@ -22,14 +24,19 @@ export default defineComponent({
   components: {
     LayoutGrid, BookOpen, FileText, CreditCard,
     Megaphone, Building2, BarChart3, Settings, ChevronDown, ChevronRight, Zap, GraduationCap, Store,
-    PanelLeftClose, PanelLeftOpen
+    ChevronsLeft, ChevronsRight, Moon, Sun
   },
   props: {
     currentView: {
       type: String,
       default: 'dashboard'
+    },
+    isDark: {
+      type: Boolean,
+      default: false
     }
   },
+  emits: ['navigate', 'toggle-theme'],
   setup(props, { emit }) {
     const isCollapsed = ref(false);
 
@@ -44,7 +51,6 @@ export default defineComponent({
         children: [
             { id: 'course-management', label: '课程管理' },
             { id: 'homework', label: '作业管理' },
-            { id: 'small-class', label: '小班课管理' },
         ]
       },
       { 
@@ -65,8 +71,7 @@ export default defineComponent({
         isOpen: true,
         children: [
             { id: 'finance', label: '交易管理' },
-            { id: 'refunds', label: '退款管理' },
-            { id: 'settlement', label: '结算记录' }
+            { id: 'refunds', label: '退款管理' }
         ]
       },
       { 
@@ -76,7 +81,8 @@ export default defineComponent({
         hasSubmenu: true,
         children: [
             { id: 'edu-affairs', label: '学员管理' },
-            { id: 'class-scheduling', label: '排课管理' }
+            { id: 'class-scheduling', label: '排课管理' },
+            { id: 'small-class', label: '小班课管理' }
         ]
       },
       { 
@@ -94,9 +100,11 @@ export default defineComponent({
         label: '机构管理', 
         icon: 'Building2', 
         hasSubmenu: true,
+        isOpen: true,
         children: [
-            { id: 'institution', label: '机构信息' },
-            { id: 'staff', label: '员工管理' }
+            { id: 'staff', label: '人员管理' },
+            { id: 'settlement', label: '结算管理' },
+            { id: 'keys', label: '密钥12' }
         ]
       },
       { 
@@ -106,7 +114,8 @@ export default defineComponent({
         hasSubmenu: true,
         children: [
             { id: 'stats', label: '数据概览' },
-            { id: 'traffic-analysis', label: '流量分析' }
+            { id: 'traffic-analysis', label: '流量分析' },
+            { id: 'learning-data', label: '学习数据' }
         ]
       },
       { 
@@ -153,7 +162,11 @@ export default defineComponent({
         isCollapsed.value = !isCollapsed.value;
     };
 
-    return { navItems, handleClick, handleChildClick, isCollapsed, toggleCollapse, isActive };
+    const toggleTheme = () => {
+        emit('toggle-theme');
+    };
+
+    return { navItems, handleClick, handleChildClick, isCollapsed, toggleCollapse, isActive, toggleTheme };
   },
   template: `
   <aside 
@@ -231,29 +244,44 @@ export default defineComponent({
       </div>
     </nav>
     
-    <!-- Footer / User Profile -->
-    <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+    <!-- Footer Redesign -->
+    <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1">
        
+       <!-- Theme Toggle -->
+       <button 
+         @click="toggleTheme"
+         class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer group"
+         :class="isCollapsed ? 'justify-center px-0' : ''"
+         :title="isDark ? '切换亮色模式' : '切换深色模式'"
+       >
+         <Sun v-if="isDark" class="w-5 h-5 transition-transform group-hover:rotate-45" />
+         <Moon v-else class="w-5 h-5 transition-transform group-hover:-rotate-12" />
+         
+         <span 
+            class="text-[14px] font-medium whitespace-nowrap transition-all duration-200"
+            :class="isCollapsed ? 'hidden opacity-0 w-0' : 'opacity-100'"
+         >
+            {{ isDark ? '亮色模式' : '深色模式' }}
+         </span>
+       </button>
+
        <!-- Collapse Switch -->
        <button 
          @click="toggleCollapse"
-         class="flex items-center gap-3 px-2 py-2 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-         :class="isCollapsed ? 'justify-center' : ''"
-         :title="isCollapsed ? '展开菜单' : '收起菜单'"
+         class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer group"
+         :class="isCollapsed ? 'justify-center px-0' : ''"
+         title="收起菜单"
        >
-         <PanelLeftOpen v-if="isCollapsed" class="w-5 h-5" />
-         <PanelLeftClose v-else class="w-5 h-5" />
-         <span class="text-xs font-medium whitespace-nowrap" :class="isCollapsed ? 'hidden' : ''">收起菜单</span>
+         <ChevronsRight v-if="isCollapsed" class="w-5 h-5" />
+         <ChevronsLeft v-else class="w-5 h-5" />
+         <span 
+            class="text-[14px] font-medium whitespace-nowrap transition-all duration-200"
+            :class="isCollapsed ? 'hidden opacity-0 w-0' : 'opacity-100'"
+         >
+            收起
+         </span>
        </button>
 
-       <!-- Profile -->
-       <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors" :class="isCollapsed ? 'justify-center p-0 mt-2' : ''">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-9 h-9 rounded-full bg-slate-200 flex-shrink-0" />
-          <div class="flex-1 min-w-0 overflow-hidden" :class="isCollapsed ? 'hidden' : ''">
-             <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">赵峰</p>
-             <p class="text-xs text-slate-500 dark:text-slate-400 truncate">超级管理员</p>
-          </div>
-       </div>
     </div>
   </aside>
   `
